@@ -44,7 +44,7 @@ RULES = [
     (
         "threat",
         20,
-        r"\b(account blocked|account suspended|legal action|police case|will be arrested)\b",
+        r"\b(account (?:(?:will be|is|has been) )?(?:blocked|suspended)|legal action|police case|will be arrested)\b",
         "Uses threats or account warnings to pressure you.",
     ),
     (
@@ -107,9 +107,16 @@ def analyse_text(text):
 
     urls = re.findall(r"https?://[^\s]+", cleaned, flags=re.IGNORECASE)
     for raw_url in urls:
-        candidate = raw_url.rstrip(".,);]}>")
+        candidate = raw_url.rstrip(".,);}>")
+        while candidate.endswith("]") and candidate.count("]") > candidate.count("["):
+            candidate = candidate[:-1]
         try:
             parsed = urlparse(candidate)
+            host = (parsed.hostname or "").lower()
+            if not host or any(char.isspace() for char in host):
+                raise ValueError("URL must include a valid hostname.")
+            # urlparse defers invalid and out-of-range port errors until access.
+            parsed.port
             if parsed.scheme.lower() == "http":
                 signals.append(
                     {
@@ -119,8 +126,7 @@ def analyse_text(text):
                     }
                 )
                 score += 10
-            host = (parsed.hostname or "").lower()
-            if host and (host.count("-") >= 2 or re.search(r"\d{4,}", host)):
+            if host.count("-") >= 2 or re.search(r"\d{4,}", host):
                 signals.append(
                     {
                         "key": "domain_shape",
@@ -189,10 +195,16 @@ def index():
 
 @app.post("/api/analyse")
 def api_analyse():
-    data = request.get_json(silent=True) or {}
-    text = str(data.get("text", ""))[:5000]
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify({"error": "Please send a JSON object with a text field."}), 400
+    text = data.get("text", "")
+    if not isinstance(text, str):
+        return jsonify({"error": "The text field must be a string."}), 400
     if not text.strip():
         return jsonify({"error": "Please enter a message or URL."}), 400
+    if len(text) > 5000:
+        return jsonify({"error": "Please limit your input to 5,000 characters."}), 400
     return jsonify(analyse_text(text))
 
 

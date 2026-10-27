@@ -32,7 +32,7 @@ Demonstrate an accessible first-pass educational tool for identifying common sca
 
 ## Analysis flow
 
-1. Trim input and cap it at 5,000 characters.
+1. Require a JSON object containing a nonblank text string of at most 5,000 characters; reject invalid or oversized inputs rather than silently truncating them. Trim accepted text before analysis.
 2. Match text against a small, documented set of warning patterns.
 3. If URLs are present, inspect simple structural indicators such as HTTP and unusual hostname shapes.
 4. Sum configured points and cap the score at 100.

@@ -128,7 +128,9 @@ async function loadHistory() {
   const container = document.querySelector("#history");
   try {
     const response = await fetch("/api/history");
+    if (!response.ok) throw new Error("Could not load history.");
     const entries = await response.json();
+    if (!Array.isArray(entries)) throw new Error("Invalid history response.");
     container.replaceChildren();
     if (!entries.length) {
       container.textContent = "No checks yet.";

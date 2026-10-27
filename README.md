@@ -41,8 +41,10 @@ python -m unittest discover -s tests -v
 Request:
 
 ```json
-{"text": "URGENT! Your account will be blocked. Share your OTP."}
+{ "text": "URGENT! Your account will be blocked. Share your OTP." }
 ```
+
+The request must be a JSON object with a nonblank `text` string of at most 5,000 characters. Invalid requests return HTTP 400 with an `error` message; oversized text is rejected rather than silently truncated.
 
 `GET /api/history` returns the latest 10 local demo scans. `GET /health` is a basic health check.
 

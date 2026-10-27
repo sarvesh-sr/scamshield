@@ -1,3 +1,4 @@
+import json
 import os
 import tempfile
 import unittest
@@ -28,6 +29,39 @@ class ScamShieldTests(unittest.TestCase):
         response = self.client.post("/api/analyse", json={"text": "  "})
         self.assertEqual(response.status_code, 400)
 
+    def test_non_object_json_rejected(self):
+        for payload in (["urgent"], "urgent", 123, True, None):
+            with self.subTest(payload=payload):
+                response = self.client.post(
+                    "/api/analyse",
+                    data=json.dumps(payload),
+                    content_type="application/json",
+                )
+                self.assertEqual(response.status_code, 400)
+                self.assertIn("error", response.json)
+
+    def test_non_string_text_rejected(self):
+        for text in (None, 123, True, ["OTP"], {"message": "OTP"}):
+            with self.subTest(text=text):
+                response = self.client.post("/api/analyse", json={"text": text})
+                self.assertEqual(response.status_code, 400)
+                self.assertIn("error", response.json)
+
+    def test_missing_or_malformed_json_rejected(self):
+        for body in ("", "{", "{}"):
+            with self.subTest(body=body):
+                response = self.client.post(
+                    "/api/analyse", data=body, content_type="application/json"
+                )
+                self.assertEqual(response.status_code, 400)
+
+    def test_input_length_limit(self):
+        response = self.client.post("/api/analyse", json={"text": "a" * 5000})
+        self.assertEqual(response.status_code, 200)
+        response = self.client.post("/api/analyse", json={"text": "a" * 5001})
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(len(self.client.get("/api/history").json), 1)
+
     def test_otp_warning_detected(self):
         response = self.client.post(
             "/api/analyse",
@@ -44,6 +78,38 @@ class ScamShieldTests(unittest.TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json["risk_score"], 0)
+
+    def test_account_threat_variants_detected(self):
+        for text in (
+            "Your account blocked",
+            "Your account will be blocked today",
+            "Your account is suspended",
+            "Your account has been suspended",
+        ):
+            with self.subTest(text=text):
+                result = scam_app.analyse_text(text)
+                self.assertIn("threat", [signal["key"] for signal in result["signals"]])
+
+    def test_malformed_urls_detected(self):
+        for text in (
+            "https:///login",
+            "https://example.com:invalid",
+            "https://example.com:99999",
+            "https://[invalid]",
+        ):
+            with self.subTest(text=text):
+                result = scam_app.analyse_text(text)
+                self.assertIn(
+                    "malformed_url", [signal["key"] for signal in result["signals"]]
+                )
+
+    def test_ipv6_url_not_marked_malformed(self):
+        for text in ("https://[::1]", "[https://[::1]]"):
+            with self.subTest(text=text):
+                result = scam_app.analyse_text(text)
+                self.assertNotIn(
+                    "malformed_url", [signal["key"] for signal in result["signals"]]
+                )
 
     def test_history_returns_scan(self):
         self.client.post("/api/analyse", json={"text": "share your OTP"})
