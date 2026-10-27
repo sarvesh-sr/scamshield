@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta
+            name="description"
+            content="ScamShield helps identify common warning signs in suspicious messages and URLs."
+        />
+        <title>ScamShield — Cyber Safety Checker</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+    </head>
+    <body>
+        <header class="topbar">
+            <a class="brand" href="/">🛡️ ScamShield</a>
+            <span class="tag">Cyber safety, made simpler</span>
+        </header>
+
+        <main class="container">
+            <section class="hero">
+                <p class="eyebrow">PAUSE · CHECK · PROTECT</p>
+                <h1>Not sure if a message is safe?</h1>
+                <p class="subhead">
+                    Check a suspicious SMS, email, job offer, or URL for common scam warning signs.
+                </p>
+            </section>
+
+            <section class="panel">
+                <label for="message">Paste message or URL</label>
+                <textarea
+                    id="message"
+                    maxlength="5000"
+                    placeholder="Example: URGENT! Your bank account will be blocked. Verify your account now at http://example-login-verify.com and share your OTP..."
+                ></textarea>
+                <div class="actions">
+                    <button id="analyseBtn" class="primary">Analyse warning signs</button>
+                    <button id="clearBtn" class="secondary" type="button">Clear</button>
+                </div>
+                <div class="samples">
+                    <span>Try a sample:</span>
+                    <button
+                        class="sample"
+                        data-sample="URGENT! Your bank account will be blocked today. Verify now at http://bank-login-verify-example.com and share your OTP."
+                    >
+                        Suspicious bank SMS
+                    </button>
+                    <button
+                        class="sample"
+                        data-sample="Hi, our meeting is at 4 PM. Please bring the project notes."
+                    >
+                        Ordinary message
+                    </button>
+                    <button
+                        class="sample"
+                        data-sample="Congratulations! You have won a prize. Pay a processing fee now to claim your free gift."
+                    >
+                        Prize scam example
+                    </button>
+                </div>
+                <p id="error" class="error" role="alert"></p>
+            </section>
+
+            <section id="result" class="panel result hidden" aria-live="polite">
+                <div class="result-head">
+                    <div>
+                        <p class="eyebrow">SCREENING RESULT</p>
+                        <h2 id="riskLevel">Result</h2>
+                    </div>
+                    <div class="score-wrap">
+                        <span id="score">0</span><small>/ 100 heuristic score</small>
+                    </div>
+                </div>
+                <div class="meter"><div id="meterFill"></div></div>
+                <h3>Why it was flagged</h3>
+                <ul id="signals"></ul>
+                <h3>What you should do</h3>
+                <ul id="recommendations"></ul>
+                <p id="disclaimer" class="disclaimer"></p>
+            </section>
+
+            <section class="panel awareness">
+                <div class="section-head">
+                    <div>
+                        <p class="eyebrow">LEARN TO SPOT SCAMS</p>
+                        <h2>Pause before you act</h2>
+                    </div>
+                    <div class="language-switch">
+                        <button id="englishBtn" class="lang active">English</button>
+                        <button id="tamilBtn" class="lang">தமிழ்</button>
+                    </div>
+                </div>
+                <div id="tips" class="tips-grid"></div>
+            </section>
+
+            <section class="panel">
+                <h2>Recent local checks</h2>
+                <p class="muted">
+                    The last 10 checks on this demo device. Avoid pasting real personal or financial
+                    information.
+                </p>
+                <button id="historyBtn" class="secondary">Refresh history</button>
+                <div id="history" class="history"></div>
+            </section>
+
+            <footer>
+                <p>
+                    ScamShield is an educational prototype. A low score does not prove a message is
+                    safe.
+                </p>
+                <p>
+                    Suspected cybercrime in India:
+                    <a href="https://cybercrime.gov.in" target="_blank" rel="noopener noreferrer"
+                        >cybercrime.gov.in</a
+                    >
+                    · Helpline 1930 for financial cyber fraud.
+                </p>
+            </footer>
+        </main>
+        <script src="{{ url_for('static', filename='app.js') }}"></script>
+    </body>
+</html>

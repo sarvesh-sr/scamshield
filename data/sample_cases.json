@@ -1,0 +1,22 @@
+[
+  {
+    "name": "Urgent OTP scam",
+    "text": "URGENT! Your bank account will be blocked today. Share your OTP immediately.",
+    "expected_min_score": 25
+  },
+  {
+    "name": "Fake prize",
+    "text": "Congratulations! You have won a free gift. Pay a processing fee now to claim your prize.",
+    "expected_min_score": 20
+  },
+  {
+    "name": "Ordinary meeting",
+    "text": "Hi, our project meeting is at 4 PM. Please bring your notes.",
+    "expected_max_score": 0
+  },
+  {
+    "name": "Suspicious shortened link",
+    "text": "Please review this: https://bit.ly/example-link",
+    "expected_min_score": 10
+  }
+]
